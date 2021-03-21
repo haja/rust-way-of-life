@@ -49,7 +49,9 @@ impl Game {
   }
 
   pub fn tick(&self) -> Game {
-    self.clone()
+    let mut next = self.clone();
+    next.cells[0][0].alive = false;
+    next
   }
 
   pub fn row_columns(&self) -> &Vec<Vec<Cell>> {
@@ -120,5 +122,23 @@ mod tests {
   #[should_panic]
   fn game_from_specific_invalid_line_lengths_should_panic() {
     Game::from_specific(".\n..");
+  }
+
+  #[test]
+  fn dead_alone_should_stay_dead() {
+    let initial = Game::from_specific(".");
+
+    let result = initial.tick();
+
+    assert_eq!(result.row_columns()[0][0].alive, false);
+  }
+
+  #[test]
+  fn alive_alone_should_die() {
+    let initial = Game::from_specific("#");
+
+    let result = initial.tick();
+
+    assert_eq!(result.row_columns()[0][0].alive, false);
   }
 }
