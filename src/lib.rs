@@ -70,17 +70,23 @@ impl Game {
 
   pub fn tick(&self) -> Game {
     let mut next = self.clone();
-    next.cells
-        .iter_mut()
-        .enumerate()
-        .for_each(|(y, row)| {
-          row.iter_mut()
-              .enumerate()
-              .for_each(|(x, cell)| {
-                let neighbours = get_neighbours(self, x, y);
-                cell.alive = is_alive(&cell, &neighbours);
-              });
-        });
+    next.cells = Box::new(
+      self.cells.iter()
+          .enumerate()
+          .map(|(y, row)| {
+            row.iter()
+                .enumerate()
+                .map(|(x, old_cell)| {
+                  let neighbours = get_neighbours(self, x, y);
+                  let cell = Cell {
+                    alive: staying_alive(old_cell, &neighbours),
+                  };
+                  cell
+                })
+                .collect()
+          })
+          .collect()
+    );
     next
   }
 
@@ -89,7 +95,7 @@ impl Game {
   }
 }
 
-fn is_alive(cell: &Cell, neighbours: &Vec<&Cell>) -> bool {
+fn staying_alive(cell: &Cell, neighbours: &Vec<&Cell>) -> bool {
   let alive_neighbours_count = neighbours
       .iter()
       .filter(|c| c.alive)
@@ -130,7 +136,7 @@ fn get_three(game: &Game, x: usize, y: i32) -> Vec<&Cell> {
 }
 
 fn get_three_of_row(x: usize, row: &Vec<Cell>) -> Vec<&Cell> {
-  ((x as i32 - 1)..(x as i32 + 1))
+  ((x as i32 - 1)..=(x as i32 + 1))
       .map(|xi| {
         get_if_positive(row, xi)
       })
