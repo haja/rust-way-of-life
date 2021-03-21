@@ -101,6 +101,22 @@ mod tests {
   }
 
   #[test]
+  fn game_from_specific_two_columns() {
+    let game = Game::from_specific(".#");
+
+    assert_eq!(game.row_columns()[0][0].alive, false);
+    assert_eq!(game.row_columns()[0][1].alive, true);
+  }
+
+  #[test]
+  fn game_from_specific_two_rows() {
+    let game = Game::from_specific("#\n.");
+
+    assert_eq!(game.row_columns()[0][0].alive, true);
+    assert_eq!(game.row_columns()[1][0].alive, false);
+  }
+
+  #[test]
   #[should_panic]
   fn game_from_specific_invalid_line_lengths_should_panic() {
     Game::from_specific(".\n..");
