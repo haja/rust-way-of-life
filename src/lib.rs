@@ -1,12 +1,12 @@
 use rand_xoshiro::rand_core::{RngCore, SeedableRng};
 use rand_xoshiro::Xoshiro256PlusPlus;
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct Game {
   cells: Box<Vec<Vec<Cell>>>
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct Cell {
   pub alive: bool,
 }
@@ -50,7 +50,17 @@ impl Game {
 
   pub fn tick(&self) -> Game {
     let mut next = self.clone();
-    next.cells[0][0].alive = false;
+    next.cells
+        .iter_mut()
+        .enumerate()
+        .for_each(|(y, row)| {
+          row.iter_mut()
+              .enumerate()
+              .for_each(|(x, cell)| {
+                let neighbours = get_neighbours(self, x, y);
+                cell.alive = is_alive(&cell, &neighbours);
+              });
+        });
     next
   }
 
@@ -59,6 +69,64 @@ impl Game {
   }
 }
 
+fn is_alive(cell: &Cell, neighbours: &Vec<&Cell>) -> bool {
+  let alive_neighbours_count = neighbours
+      .iter()
+      .filter(|c| c.alive)
+      .count();
+  if cell.alive {
+    alive_neighbours_count == 2 || alive_neighbours_count == 3
+  } else {
+    alive_neighbours_count == 3
+  }
+}
+
+fn get_neighbours(game: &Game, x: usize, y: usize) -> Vec<&Cell> {
+  let prev_row = get_three(game, x, y as i32 - 1);
+  let next_row = get_three(game, x, (y + 1) as i32);
+  let mut other_rows = vec![prev_row, next_row].concat();
+
+  let same_row = &game.cells[y];
+  [x as i32 - 1, x as i32 + 1]
+      .iter()
+      .for_each(|xi| {
+        if let Some(cell) = get_if_positive(same_row, *xi) {
+          other_rows.push(cell);
+        }
+      });
+
+  other_rows
+}
+
+fn get_three(game: &Game, x: usize, y: i32) -> Vec<&Cell> {
+  if y >= 0 {
+    game.cells
+        .get(y as usize)
+        .map(|r| get_three_of_row(x, r))
+        .unwrap_or(Vec::new())
+  } else {
+    Vec::new()
+  }
+}
+
+fn get_three_of_row(x: usize, row: &Vec<Cell>) -> Vec<&Cell> {
+  ((x as i32 - 1)..(x as i32 + 1))
+      .map(|xi| {
+        get_if_positive(row, xi)
+      })
+      .flatten()
+      .collect()
+}
+
+fn get_if_positive<T>(vec: &Vec<T>, idx: i32) -> Option<&T> {
+  if idx >=0 {
+    vec.get(idx as usize)
+  } else {
+    None
+  }
+}
+
+// TODO implement From instead?
 fn to_cell(c: char) -> Cell {
   Cell { alive: c == '#' }
 }
@@ -140,5 +208,21 @@ mod tests {
     let result = initial.tick();
 
     assert_eq!(result.row_columns()[0][0].alive, false);
+  }
+
+  #[test]
+  fn block_should_stay_alive() {
+    let initial = block();
+
+    let result = initial.tick();
+
+    assert_eq!(result, block());
+  }
+
+  fn block() -> Game {
+    Game::from_specific(
+      "##
+##"
+    )
   }
 }
