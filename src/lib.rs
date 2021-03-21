@@ -112,18 +112,20 @@ fn staying_alive(cell: &Cell, neighbours: &[&Cell]) -> bool {
 fn get_neighbours(game: &Game, x: usize, y: usize) -> Vec<&Cell> {
   let prev_row = get_three(game, x, y as i32 - 1);
   let next_row = get_three(game, x, (y + 1) as i32);
-  let mut other_rows = vec![prev_row, next_row].concat();
 
-  let same_row = &game.cells[y];
+  let same_row = get_two(game, x, y);
+
+  vec![prev_row, same_row, next_row].concat()
+}
+
+fn get_two(game: &Game, x: usize, y: usize) -> Vec<&Cell> {
   [x as i32 - 1, x as i32 + 1]
       .iter()
-      .for_each(|xi| {
-        if let Some(cell) = get_if_positive(same_row, *xi) {
-          other_rows.push(cell);
-        }
-      });
-
-  other_rows
+      .map(|xi| {
+        get_if_positive(&game.cells[y], *xi)
+      })
+      .flatten()
+      .collect()
 }
 
 fn get_three(game: &Game, x: usize, y: i32) -> Vec<&Cell> {
@@ -275,6 +277,24 @@ mod tests {
   }
 
   #[test]
+  fn wrapping_blinker_should_blink() {
+    let initial = blinker_wrapped();
+
+    let result = initial.tick();
+
+    assert_cells(result, blinker_vert_wrapped());
+  }
+
+  #[test]
+  fn wrapping_blinker_stay_alive_2_ticks() {
+    let initial = blinker_wrapped();
+
+    let result = initial.tick().tick();
+
+    assert_cells(result, blinker_wrapped());
+  }
+
+  #[test]
   fn iteration_should_count_up() {
     let initial = Game::new(1, 1, 1, false);
 
@@ -327,6 +347,30 @@ mod tests {
 .....
 .....",
       false
+    )
+  }
+
+  fn blinker_wrapped() -> Game {
+    Game::from_specific(
+      "\
+..#..
+..#..
+.....
+.....
+..#..",
+      true
+    )
+  }
+
+  fn blinker_vert_wrapped() -> Game {
+    Game::from_specific(
+      "\
+.###.
+.....
+.....
+.....
+.....",
+      true
     )
   }
 
