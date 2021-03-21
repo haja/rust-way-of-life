@@ -285,14 +285,16 @@ mod tests {
 
   fn block() -> Game {
     Game::from_specific(
-      "##
+      "\
+##
 ##"
     )
   }
 
   fn beehive() -> Game {
     Game::from_specific(
-      "......
+      "\
+......
 ..##..
 .#..#.
 ..##..
@@ -302,7 +304,8 @@ mod tests {
 
   fn blinker() -> Game {
     Game::from_specific(
-      ".#.
+      "\
+.#.
 .#.
 .#."
     )
@@ -310,7 +313,8 @@ mod tests {
 
   fn blinker_vert() -> Game {
     Game::from_specific(
-      "...
+      "\
+...
 ###
 ..."
     )
