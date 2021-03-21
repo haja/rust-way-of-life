@@ -82,10 +82,9 @@ impl Game {
                   .enumerate()
                   .map(|(x, old_cell)| {
                     let neighbours = get_neighbours(self, x, y);
-                    let cell = Cell {
+                    Cell {
                       alive: staying_alive(old_cell, &neighbours),
-                    };
-                    cell
+                    }
                   })
                   .collect()
             })
@@ -98,7 +97,7 @@ impl Game {
   }
 }
 
-fn staying_alive(cell: &Cell, neighbours: &Vec<&Cell>) -> bool {
+fn staying_alive(cell: &Cell, neighbours: &[&Cell]) -> bool {
   let alive_neighbours_count = neighbours
       .iter()
       .filter(|c| c.alive)
@@ -138,7 +137,7 @@ fn get_three(game: &Game, x: usize, y: i32) -> Vec<&Cell> {
   }
 }
 
-fn get_three_of_row(x: usize, row: &Vec<Cell>) -> Vec<&Cell> {
+fn get_three_of_row(x: usize, row: &[Cell]) -> Vec<&Cell> {
   ((x as i32 - 1)..=(x as i32 + 1))
       .map(|xi| {
         get_if_positive(row, xi)
@@ -147,7 +146,7 @@ fn get_three_of_row(x: usize, row: &Vec<Cell>) -> Vec<&Cell> {
       .collect()
 }
 
-fn get_if_positive<T>(vec: &Vec<T>, idx: i32) -> Option<&T> {
+fn get_if_positive<T>(vec: &[T], idx: i32) -> Option<&T> {
   if idx >= 0 {
     vec.get(idx as usize)
   } else {
