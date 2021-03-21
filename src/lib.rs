@@ -131,7 +131,7 @@ fn get_three(game: &Game, x: usize, y: i32) -> Vec<&Cell> {
     game.cells
         .get(y as usize)
         .map(|r| get_three_of_row(x, r))
-        .unwrap_or(Vec::new())
+        .unwrap_or_default()
   } else {
     Vec::new()
   }
