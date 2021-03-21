@@ -143,7 +143,7 @@ fn get_wrapping(cells: &[Vec<Cell>], x: usize, y: i32) -> Vec<&Cell> {
   cells
       .get(y_wrapped)
       .map(|row| {
-        get_three_of_row(x, row)
+        get_three_of_row_wrapping(x, row)
       })
       .unwrap_or_default()
 }
@@ -162,7 +162,7 @@ fn get_or_empty(vec: &[Vec<Cell>], x: usize, y: i32) -> Vec<&Cell> {
     vec
         .get(y as usize)
         .map(|row| {
-          get_three_of_row(x, row)
+          get_three_of_row_or_empty(x, row)
         })
         .unwrap_or_default()
   } else {
@@ -170,12 +170,20 @@ fn get_or_empty(vec: &[Vec<Cell>], x: usize, y: i32) -> Vec<&Cell> {
   }
 }
 
-fn get_three_of_row(x: usize, row: &[Cell]) -> Vec<&Cell> {
+fn get_three_of_row_or_empty(x: usize, row: &[Cell]) -> Vec<&Cell> {
   ((x as i32 - 1)..=(x as i32 + 1))
       .map(|xi| {
         get_if_positive(row, xi)
       })
       .flatten()
+      .collect()
+}
+
+fn get_three_of_row_wrapping(x: usize, row: &[Cell]) -> Vec<&Cell> {
+  ((x as i32 - 1)..=(x as i32 + 1))
+      .map(|xi| {
+          &row[wrap(xi, row.len())]
+      })
       .collect()
 }
 
