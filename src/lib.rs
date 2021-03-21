@@ -33,7 +33,7 @@ pub struct Cell {
 }
 
 impl Game {
-  pub fn new(width: u16, height: u16, seed: u64) -> Game {
+  pub fn new(width: u16, height: u16, seed: u64, wrapping: bool) -> Game {
     let mut rng = Xoshiro256PlusPlus::seed_from_u64(seed);
     let cells =
         (0..height)
@@ -52,7 +52,7 @@ impl Game {
     }
   }
 
-  pub fn from_specific(layout: &str) -> Game {
+  pub fn from_specific(layout: &str, wrapping: bool) -> Game {
     let lines: Vec<&str> = layout.lines().collect();
     let width = lines[0].len();
 
@@ -165,42 +165,42 @@ mod tests {
 
   #[test]
   fn new_game_should_contain_one_row() {
-    let game = Game::new(2, 1, 1);
+    let game = Game::new(2, 1, 1, false);
 
     assert_eq!(game.row_columns().len(), 1);
   }
 
   #[test]
   fn new_game_should_contain_one_column() {
-    let game = Game::new(1, 2, 1);
+    let game = Game::new(1, 2, 1, false);
 
     assert_eq!(game.row_columns()[0].len(), 1);
   }
 
   #[test]
   fn new_game_all_columns_should_be_same_length() {
-    let game = Game::new(1, 2, 1);
+    let game = Game::new(1, 2, 1, false);
 
     assert_eq!(game.row_columns()[0].len(), game.row_columns()[1].len());
   }
 
   #[test]
   fn game_from_specific_alive() {
-    let game = Game::from_specific("#");
+    let game = Game::from_specific("#", false);
 
     assert_eq!(game.row_columns()[0][0].alive, true);
   }
 
   #[test]
   fn game_from_specific_dead() {
-    let game = Game::from_specific(".");
+    let game = Game::from_specific(".", false);
 
     assert_eq!(game.row_columns()[0][0].alive, false);
   }
 
   #[test]
   fn game_from_specific_two_columns() {
-    let game = Game::from_specific(".#");
+    let game = Game::from_specific(".#", false);
 
     assert_eq!(game.row_columns()[0][0].alive, false);
     assert_eq!(game.row_columns()[0][1].alive, true);
@@ -208,7 +208,7 @@ mod tests {
 
   #[test]
   fn game_from_specific_two_rows() {
-    let game = Game::from_specific("#\n.");
+    let game = Game::from_specific("#\n.", false);
 
     assert_eq!(game.row_columns()[0][0].alive, true);
     assert_eq!(game.row_columns()[1][0].alive, false);
@@ -217,12 +217,12 @@ mod tests {
   #[test]
   #[should_panic]
   fn game_from_specific_invalid_line_lengths_should_panic() {
-    Game::from_specific(".\n..");
+    Game::from_specific(".\n..", false);
   }
 
   #[test]
   fn dead_alone_should_stay_dead() {
-    let initial = Game::from_specific(".");
+    let initial = Game::from_specific(".", false);
 
     let result = initial.tick();
 
@@ -231,7 +231,7 @@ mod tests {
 
   #[test]
   fn alive_alone_should_die() {
-    let initial = Game::from_specific("#");
+    let initial = Game::from_specific("#", false);
 
     let result = initial.tick();
 
@@ -276,7 +276,7 @@ mod tests {
 
   #[test]
   fn iteration_should_count_up() {
-    let initial = Game::new(1, 1, 1);
+    let initial = Game::new(1, 1, 1, false);
 
     let result = initial.tick();
 
@@ -287,7 +287,8 @@ mod tests {
     Game::from_specific(
       "\
 ##
-##"
+##",
+      false
     )
   }
 
@@ -298,7 +299,8 @@ mod tests {
 ..##..
 .#..#.
 ..##..
-......"
+......",
+      false
     )
   }
 
@@ -307,7 +309,8 @@ mod tests {
       "\
 .#.
 .#.
-.#."
+.#.",
+      false
     )
   }
 
@@ -316,7 +319,8 @@ mod tests {
       "\
 ...
 ###
-..."
+...",
+      false
     )
   }
 
