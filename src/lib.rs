@@ -1,9 +1,29 @@
+use std::fmt;
+
 use rand_xoshiro::rand_core::{RngCore, SeedableRng};
 use rand_xoshiro::Xoshiro256PlusPlus;
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct Game {
   cells: Box<Vec<Vec<Cell>>>
+}
+
+impl fmt::Display for Game {
+  fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+    let state: String = self.row_columns().iter().map(|row| {
+      let mut mapped = row.iter().map(|cell| {
+        if cell.alive {
+          'x'
+        } else {
+          '.'
+        }
+      })
+          .collect::<String>();
+      mapped.push('\n');
+      mapped
+    }).collect();
+    write!(f, "current state:\n{}", state)
+  }
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -119,7 +139,7 @@ fn get_three_of_row(x: usize, row: &Vec<Cell>) -> Vec<&Cell> {
 }
 
 fn get_if_positive<T>(vec: &Vec<T>, idx: i32) -> Option<&T> {
-  if idx >=0 {
+  if idx >= 0 {
     vec.get(idx as usize)
   } else {
     None
@@ -219,10 +239,30 @@ mod tests {
     assert_eq!(result, block());
   }
 
+  #[test]
+  fn beehive_should_stay_alive() {
+    let initial = beehive();
+
+    let result = initial.tick();
+
+    println!("inital {}\nresult {}", initial, result);
+    assert_eq!(result, beehive());
+  }
+
   fn block() -> Game {
     Game::from_specific(
       "##
 ##"
+    )
+  }
+
+  fn beehive() -> Game {
+    Game::from_specific(
+      "......
+..##..
+.#..#.
+..##..
+......"
     )
   }
 }
