@@ -31,6 +31,23 @@ impl Game {
     }
   }
 
+  pub fn from_specific(layout: &str) -> Game {
+    let lines: Vec<&str> = layout.lines().collect();
+    let width = lines[0].len();
+
+    let cells = Box::new(lines.iter()
+        .map(|line| {
+          if line.len() != width {
+            panic!("layout invalid, all lines need to be of same length");
+          } else {
+            line.chars().map(to_cell).collect()
+          }
+        })
+        .collect()
+    );
+    Game { cells }
+  }
+
   pub fn tick(&self) -> Game {
     self.clone()
   }
@@ -38,6 +55,10 @@ impl Game {
   pub fn row_columns(&self) -> &Vec<Vec<Cell>> {
     &self.cells
   }
+}
+
+fn to_cell(c: char) -> Cell {
+  Cell { alive: c == '#' }
 }
 
 #[cfg(test)]
@@ -63,5 +84,25 @@ mod tests {
     let game = Game::new(1, 2, 1);
 
     assert_eq!(game.row_columns()[0].len(), game.row_columns()[1].len());
+  }
+
+  #[test]
+  fn game_from_specific_alive() {
+    let game = Game::from_specific("#");
+
+    assert_eq!(game.row_columns()[0][0].alive, true);
+  }
+
+  #[test]
+  fn game_from_specific_dead() {
+    let game = Game::from_specific(".");
+
+    assert_eq!(game.row_columns()[0][0].alive, false);
+  }
+
+  #[test]
+  #[should_panic]
+  fn game_from_specific_invalid_line_lengths_should_panic() {
+    Game::from_specific(".\n..");
   }
 }
