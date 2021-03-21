@@ -5,7 +5,7 @@ use rand_xoshiro::Xoshiro256PlusPlus;
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct Game {
-  cells: Box<Vec<Vec<Cell>>>,
+  cells: Vec<Vec<Cell>>,
   iteration_count: u64,
 }
 
@@ -35,18 +35,17 @@ pub struct Cell {
 impl Game {
   pub fn new(width: u16, height: u16, seed: u64) -> Game {
     let mut rng = Xoshiro256PlusPlus::seed_from_u64(seed);
-    let cells = Box::new(
-      (0..height)
-          .map(|_y| {
-            (0..width)
-                .map(|_x| {
-                  let alive = rng.next_u32() % 2 == 0;
-                  Cell { alive }
-                })
-                .collect()
-          })
-          .collect()
-    );
+    let cells =
+        (0..height)
+            .map(|_y| {
+              (0..width)
+                  .map(|_x| {
+                    let alive = rng.next_u32() % 2 == 0;
+                    Cell { alive }
+                  })
+                  .collect()
+            })
+            .collect();
     Game {
       iteration_count: 0,
       cells,
@@ -57,7 +56,7 @@ impl Game {
     let lines: Vec<&str> = layout.lines().collect();
     let width = lines[0].len();
 
-    let cells = Box::new(lines.iter()
+    let cells = lines.iter()
         .map(|line| {
           if line.len() != width {
             panic!("layout invalid, all lines need to be of same length");
@@ -65,8 +64,7 @@ impl Game {
             line.chars().map(to_cell).collect()
           }
         })
-        .collect()
-    );
+        .collect();
     Game {
       iteration_count: 0,
       cells,
@@ -76,23 +74,22 @@ impl Game {
   pub fn tick(&self) -> Game {
     let mut next = self.clone();
     next.iteration_count = self.iteration_count + 1;
-    next.cells = Box::new(
-      self.cells.iter()
-          .enumerate()
-          .map(|(y, row)| {
-            row.iter()
-                .enumerate()
-                .map(|(x, old_cell)| {
-                  let neighbours = get_neighbours(self, x, y);
-                  let cell = Cell {
-                    alive: staying_alive(old_cell, &neighbours),
-                  };
-                  cell
-                })
-                .collect()
-          })
-          .collect()
-    );
+    next.cells =
+        self.cells.iter()
+            .enumerate()
+            .map(|(y, row)| {
+              row.iter()
+                  .enumerate()
+                  .map(|(x, old_cell)| {
+                    let neighbours = get_neighbours(self, x, y);
+                    let cell = Cell {
+                      alive: staying_alive(old_cell, &neighbours),
+                    };
+                    cell
+                  })
+                  .collect()
+            })
+            .collect();
     next
   }
 
