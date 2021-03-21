@@ -7,6 +7,7 @@ use rand_xoshiro::Xoshiro256PlusPlus;
 pub struct Game {
   cells: Vec<Vec<Cell>>,
   iteration_count: u64,
+  wrapping: bool,
 }
 
 impl fmt::Display for Game {
@@ -49,6 +50,7 @@ impl Game {
     Game {
       iteration_count: 0,
       cells,
+      wrapping,
     }
   }
 
@@ -68,6 +70,7 @@ impl Game {
     Game {
       iteration_count: 0,
       cells,
+      wrapping,
     }
   }
 
@@ -112,7 +115,6 @@ fn staying_alive(cell: &Cell, neighbours: &[&Cell]) -> bool {
 fn get_neighbours(game: &Game, x: usize, y: usize) -> Vec<&Cell> {
   let prev_row = get_three(game, x, y as i32 - 1);
   let next_row = get_three(game, x, (y + 1) as i32);
-
   let same_row = get_two(game, x, y);
 
   vec![prev_row, same_row, next_row].concat()
@@ -129,10 +131,39 @@ fn get_two(game: &Game, x: usize, y: usize) -> Vec<&Cell> {
 }
 
 fn get_three(game: &Game, x: usize, y: i32) -> Vec<&Cell> {
+  if game.wrapping {
+    get_wrapping(&game.cells, x, y)
+  } else {
+    get_or_empty(&game.cells, x, y)
+  }
+}
+
+fn get_wrapping(cells: &[Vec<Cell>], x: usize, y: i32) -> Vec<&Cell> {
+  let y_wrapped = wrap(y, cells.len());
+  cells
+      .get(y_wrapped)
+      .map(|row| {
+        get_three_of_row(x, row)
+      })
+      .unwrap_or_default()
+}
+
+fn wrap(idx: i32, len: usize) -> usize {
+  let len = len as i32;
+  if idx < 0 {
+    (len + idx % len) as usize
+  } else {
+    (idx % len) as usize
+  }
+}
+
+fn get_or_empty(vec: &[Vec<Cell>], x: usize, y: i32) -> Vec<&Cell> {
   if y >= 0 {
-    game.cells
+    vec
         .get(y as usize)
-        .map(|r| get_three_of_row(x, r))
+        .map(|row| {
+          get_three_of_row(x, row)
+        })
         .unwrap_or_default()
   } else {
     Vec::new()
@@ -277,7 +308,7 @@ mod tests {
   }
 
   #[test]
-  fn wrapping_blinker_should_blink() {
+  fn wrapping_blinker_top_should_blink() {
     let initial = blinker_wrapped();
 
     let result = initial.tick();
@@ -286,12 +317,30 @@ mod tests {
   }
 
   #[test]
-  fn wrapping_blinker_stay_alive_2_ticks() {
+  fn wrapping_blinker_top_stay_alive_2_ticks() {
     let initial = blinker_wrapped();
 
     let result = initial.tick().tick();
 
     assert_cells(result, blinker_wrapped());
+  }
+
+  #[test]
+  fn wrapping_blinker_left_should_blink() {
+    let initial = blinker_wrapped_left();
+
+    let result = initial.tick();
+
+    assert_cells(result, blinker_vert_wrapped_left());
+  }
+
+  #[test]
+  fn wrapping_blinker_left_stay_alive_2_ticks() {
+    let initial = blinker_wrapped_left();
+
+    let result = initial.tick().tick();
+
+    assert_cells(result, blinker_wrapped_left());
   }
 
   #[test]
@@ -310,7 +359,7 @@ mod tests {
 .##.
 .##.
 ....",
-      false
+      false,
     )
   }
 
@@ -322,7 +371,7 @@ mod tests {
 .#..#.
 ..##..
 ......",
-      false
+      false,
     )
   }
 
@@ -334,7 +383,7 @@ mod tests {
 ..#..
 ..#..
 .....",
-      false
+      false,
     )
   }
 
@@ -346,7 +395,7 @@ mod tests {
 .###.
 .....
 .....",
-      false
+      false,
     )
   }
 
@@ -358,7 +407,7 @@ mod tests {
 .....
 .....
 ..#..",
-      true
+      true,
     )
   }
 
@@ -370,7 +419,32 @@ mod tests {
 .....
 .....
 .....",
-      true
+      true,
+    )
+  }
+
+
+  fn blinker_wrapped_left() -> Game {
+    Game::from_specific(
+      "\
+.....
+#....
+#....
+#....
+.....",
+      false,
+    )
+  }
+
+  fn blinker_vert_wrapped_left() -> Game {
+    Game::from_specific(
+      "\
+.....
+.....
+##..#
+.....
+.....",
+      false,
     )
   }
 
