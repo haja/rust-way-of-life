@@ -286,8 +286,10 @@ mod tests {
   fn block() -> Game {
     Game::from_specific(
       "\
-##
-##",
+....
+.##.
+.##.
+....",
       false
     )
   }
@@ -307,9 +309,11 @@ mod tests {
   fn blinker() -> Game {
     Game::from_specific(
       "\
-.#.
-.#.
-.#.",
+.....
+..#..
+..#..
+..#..
+.....",
       false
     )
   }
@@ -317,9 +321,11 @@ mod tests {
   fn blinker_vert() -> Game {
     Game::from_specific(
       "\
-...
-###
-...",
+.....
+.....
+.###.
+.....
+.....",
       false
     )
   }
