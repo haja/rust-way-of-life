@@ -5,7 +5,8 @@ use rand_xoshiro::Xoshiro256PlusPlus;
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct Game {
-  cells: Box<Vec<Vec<Cell>>>
+  cells: Box<Vec<Vec<Cell>>>,
+  iteration_count: u64,
 }
 
 impl fmt::Display for Game {
@@ -22,7 +23,7 @@ impl fmt::Display for Game {
       mapped.push('\n');
       mapped
     }).collect();
-    write!(f, "current state:\n{}", state)
+    write!(f, "iteration {}:\n{}", self.iteration_count, state)
   }
 }
 
@@ -47,7 +48,8 @@ impl Game {
           .collect()
     );
     Game {
-      cells
+      iteration_count: 0,
+      cells,
     }
   }
 
@@ -65,11 +67,15 @@ impl Game {
         })
         .collect()
     );
-    Game { cells }
+    Game {
+      iteration_count: 0,
+      cells,
+    }
   }
 
   pub fn tick(&self) -> Game {
     let mut next = self.clone();
+    next.iteration_count = self.iteration_count + 1;
     next.cells = Box::new(
       self.cells.iter()
           .enumerate()
@@ -242,7 +248,7 @@ mod tests {
 
     let result = initial.tick();
 
-    assert_eq!(result, block());
+    assert_cells(result, block());
   }
 
   #[test]
@@ -252,7 +258,16 @@ mod tests {
     let result = initial.tick();
 
     println!("inital {}\nresult {}", initial, result);
-    assert_eq!(result, beehive());
+    assert_cells(result, beehive());
+  }
+
+  #[test]
+  fn iteration_should_count_up() {
+    let initial = Game::new(1, 1, 1);
+
+    let result = initial.tick();
+
+    assert_eq!(result.iteration_count, 1);
   }
 
   fn block() -> Game {
@@ -270,5 +285,9 @@ mod tests {
 ..##..
 ......"
     )
+  }
+
+  fn assert_cells(result: Game, expected: Game) {
+    assert_eq!(result.cells, expected.cells);
   }
 }

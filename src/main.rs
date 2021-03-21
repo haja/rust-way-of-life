@@ -13,15 +13,5 @@ fn main() {
 }
 
 fn print(game: &Game) {
-  println!("we are live!");
-  game.row_columns().iter().for_each(|row| {
-    let str: String = row.iter().map(|cell| {
-      if cell.alive {
-        'x'
-      } else {
-        '.'
-      }
-    }).collect();
-    println!("{}", str);
-  });
+  println!("{}", game);
 }
