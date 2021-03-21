@@ -14,7 +14,7 @@ impl fmt::Display for Game {
     let state: String = self.row_columns().iter().map(|row| {
       let mut mapped = row.iter().map(|cell| {
         if cell.alive {
-          'x'
+          '#'
         } else {
           '.'
         }
