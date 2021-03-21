@@ -257,8 +257,25 @@ mod tests {
 
     let result = initial.tick();
 
-    println!("inital {}\nresult {}", initial, result);
     assert_cells(result, beehive());
+  }
+
+  #[test]
+  fn blinker_should_stay_alive_2_ticks() {
+    let initial = blinker();
+
+    let result = initial.tick().tick();
+
+    assert_cells(result, blinker());
+  }
+
+  #[test]
+  fn blinker_should_blink() {
+    let initial = blinker();
+
+    let result = initial.tick();
+
+    assert_cells(result, blinker_vert());
   }
 
   #[test]
@@ -287,7 +304,24 @@ mod tests {
     )
   }
 
+  fn blinker() -> Game {
+    Game::from_specific(
+      ".#.
+.#.
+.#."
+    )
+  }
+
+  fn blinker_vert() -> Game {
+    Game::from_specific(
+      "...
+###
+..."
+    )
+  }
+
   fn assert_cells(result: Game, expected: Game) {
+    println!("result:{}\nexpected:{}", result, expected);
     assert_eq!(result.cells, expected.cells);
   }
 }
