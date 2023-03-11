@@ -4,8 +4,9 @@ use std::time::Duration;
 use rust_way_of_life::Game;
 
 fn main() {
-  //let mut game = Game::new(100, 10, 1234);
-  let mut game = Game::from_specific("\
+    //let mut game = Game::new(100, 10, 1234);
+    let mut game = Game::from_specific(
+        "\
 ...........................
 ...........................
 ...........................
@@ -18,16 +19,16 @@ fn main() {
 ...........................
 ...........................
 ...........................",
-                                     false,
-  );
+        true,
+    );
 
-  loop {
-    print(&game);
-    game = game.tick();
-    thread::sleep(Duration::from_millis(100));
-  }
+    loop {
+        print(&game);
+        game = game.tick();
+        thread::sleep(Duration::from_millis(100));
+    }
 }
 
 fn print(game: &Game) {
-  println!("{}", game);
+    println!("{}", game);
 }
